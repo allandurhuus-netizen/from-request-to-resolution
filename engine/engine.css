@@ -1,0 +1,792 @@
+/* Claude Power Show, canvas engine.
+   Visual language: ../../_shared/visual-language.md
+   Motion:          ../../_shared/motion-language.md   (timings live in the config, not here)
+
+   Type is Bahnschrift, one face, doing three jobs through its variable width axis:
+     wdth 75  condensed  ->  eyebrows, labels, figures
+     wdth 100 normal     ->  headings and body
+   Installed on Windows, so nothing is fetched. */
+
+:root {
+  --ground:      #0a0d12;
+  --ground-lift: #10141c;
+  --ink:         #e9ecf2;
+  --ink-quiet:   #838d9f;
+  --accent:      #e8b04b;
+  --frame:       rgba(255, 255, 255, .10);
+
+  --design-w: 1920;
+  --design-h: 1080;
+
+  --easing: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur: 0ms;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Bahnschrift", "DIN Next", "Segoe UI", system-ui, sans-serif;
+  font-variation-settings: "wght" 300, "wdth" 100;
+  -webkit-font-smoothing: antialiased;
+}
+
+#viewport { position: fixed; inset: 0; overflow: hidden; }
+
+/* ---- ground -------------------------------------------------------------
+   One element. A track this wide cannot afford grid lines as DOM nodes.
+   Parallaxed at 0.35x so camera moves have depth. Felt, not read. */
+#ground {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(to right, rgba(255,255,255,.030) 0 1px, transparent 1px 120px),
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.030) 0 1px, transparent 1px 120px),
+    repeating-linear-gradient(to right, rgba(255,255,255,.038) 0 1px, transparent 1px 960px);
+  transition: background-position var(--dur) var(--easing);
+  will-change: background-position;
+}
+/* the vignette does not move: it is the room, not the ground */
+#viewport::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 74% 58% at 50% 44%, rgba(116,138,190,.13), transparent 72%);
+}
+
+#viewport::after {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background:
+    linear-gradient(to right, var(--ground) 0, transparent 4.5%, transparent 95.5%, var(--ground) 100%),
+    linear-gradient(to bottom, var(--ground) 0, transparent 4%, transparent 96%, var(--ground) 100%);
+}
+
+/* ---- camera -------------------------------------------------------------
+   Scale and translate are on separate elements on purpose: combined, pan
+   distance changes with zoom and the fan-out pull-back drifts off centre. */
+#camera {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 0; height: 0;
+  transition: transform var(--dur) var(--easing);
+  will-change: transform;
+}
+#canvas {
+  position: absolute;
+  transition: transform var(--dur) var(--easing);
+  will-change: transform;
+}
+
+/* ---- the track ----------------------------------------------------------
+   The signature element, and the only saturated thing on screen. */
+#track { position: absolute; overflow: visible; pointer-events: none; }
+.track-dim   { stroke: rgba(255,255,255,.13); stroke-width: calc(2px * var(--inv, 1)); fill: none; }
+.track-lit   { stroke: var(--accent); stroke-width: calc(2.5px * var(--inv, 1)); fill: none;
+               filter: drop-shadow(0 0 calc(14px * var(--inv, 1)) rgba(232,176,75,.55)); }
+.tick-dim    { fill: rgba(255,255,255,.20); }
+.tick-lit    { fill: var(--accent);
+               filter: drop-shadow(0 0 calc(10px * var(--inv, 1)) rgba(232,176,75,.7)); }
+.tick-dim, .tick-lit { r: calc(9px * var(--inv, 1)); }
+.tick-big    { r: calc(13px * var(--inv, 1)); }
+.tick-sub    { r: calc(7px * var(--inv, 1)); }
+
+/* ---- sections -----------------------------------------------------------
+   Every stop is a 1920x1080 box centred on its computed canvas coordinate.
+   Content sits above the track, which runs through the lower part of the box. */
+.section {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .16;
+  transition: opacity var(--dur) var(--easing);
+}
+/* The layout lives on .inner so it can be counter-scaled: at the final reveal the
+   camera pulls back to see the whole track while the closing words hold their
+   size on screen. Everything else renders with scale(1) and is unaffected. */
+.inner {
+  width: 1920px;
+  height: 1080px;
+  flex: none;
+  padding: 96px 130px 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.section.here { opacity: 1; }
+
+.eyebrow {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 21px;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+  margin-bottom: 34px;
+}
+.eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 34px; height: 1px;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-right: 18px;
+  margin-bottom: 4px;
+}
+h2 {
+  font-variation-settings: "wght" 600, "wdth" 100;
+  font-size: 72px;
+  line-height: 1.06;
+  letter-spacing: -.015em;
+}
+.body {
+  font-variation-settings: "wght" 300, "wdth" 100;
+  font-size: 29px;
+  line-height: 1.5;
+  color: #b9c1cf;
+  max-width: 30ch;
+  margin-top: 30px;
+}
+
+/* ---- asset frames -------------------------------------------------------
+   Windows docked into the canvas, never full-bleed, one size ceiling for all
+   layouts so nothing is emphasised by accident. */
+.frame {
+  background: var(--ground-lift);
+  border: 1px solid var(--frame);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 40px 90px -30px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.4);
+  max-width: 100%;
+  width: fit-content;   /* the frame hugs its capture, never the column */
+}
+.frame img { display: block; border-radius: 4px; max-width: 100%; max-height: 100%; }
+.caption {
+  font-variation-settings: "wght" 400, "wdth" 75;
+  font-size: 17px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+  margin-top: 18px;
+}
+
+/* ---- layouts ------------------------------------------------------------ */
+
+.inner.l-title { align-items: center; text-align: center; justify-content: center; }
+.inner.l-title .eyebrow::before { display: none; }
+.inner.l-title h2 { font-size: 128px; letter-spacing: -.03em; max-width: 20ch; }
+.inner.l-title .body { max-width: 42ch; margin-top: 42px; }
+
+.inner.l-text-only h2 { max-width: 17ch; }
+.inner.l-text-only .body { max-width: 40ch; font-size: 31px; }
+
+.inner.l-single-asset .row,
+.inner.l-image-stack .row,
+.inner.l-animation .row,
+.inner.l-asset-pair .row {
+  display: grid;
+  grid-template-columns: 600px 1fr;
+  gap: 90px;
+  align-items: center;
+}
+.inner.l-single-asset .art { display: flex; flex-direction: column; align-items: flex-start; }
+/* the ceiling is the content box, not a round number: the signing page is a whole
+   scrolling page at 0.58:1, and every pixel of height it loses it loses in width too */
+.inner.l-single-asset .frame { max-height: 700px; }
+.inner.l-single-asset .frame img { max-height: 680px; }
+
+/* Two assets docked in the art column, side by side, each half of it minus the gap.
+   The frames size to their pictures and sit adjacent: stretching each half of the row
+   to 50% parked them at opposite ends of the screen with a hole in the middle. */
+.inner.l-asset-pair .art { min-width: 0; }
+.inner.l-asset-pair .pair { display: flex; gap: 50px; align-items: flex-start; min-height: 0; }
+.inner.l-asset-pair .pair > div { flex: 0 0 auto; min-width: 0; }
+/* height-bounded so a portrait document cannot outgrow the 1080 box and push the
+   heading off the top, which is what the pair did at full HD before this cap */
+.inner.l-asset-pair .frame { max-width: 460px; }
+.inner.l-asset-pair .frame img { max-width: 440px; max-height: 620px; }
+
+/* the one heightened beat. Section scale pulls the camera back so both lanes
+   are in frame at once, which is the whole point of the moment. */
+.inner.l-split-lane .lanes { display: flex; flex-direction: column; gap: 54px; margin-top: 48px; }
+.inner.l-split-lane .lane {
+  display: grid;
+  grid-template-columns: 180px 1fr 560px;
+  gap: 56px;
+  align-items: center;
+  border-left: 1px solid rgba(255,255,255,.16);
+  padding-left: 40px;
+}
+.inner.l-split-lane .lane-label {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 26px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.inner.l-split-lane .body { margin-top: 0; font-size: 26px; max-width: none; }
+.inner.l-split-lane .frame img { max-height: 340px; }
+.inner.l-split-lane h2 { font-size: 62px; }
+
+.inner.l-figure { align-items: center; justify-content: center; text-align: center; }
+.inner.l-figure .eyebrow::before { display: none; }
+.inner.l-figure .figure {
+  font-variation-settings: "wght" 200, "wdth" 75;
+  font-size: 400px;
+  line-height: .82;
+  color: var(--accent);
+  letter-spacing: -.02em;
+}
+.inner.l-figure .figure-label {
+  font-variation-settings: "wght" 400, "wdth" 75;
+  font-size: 27px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+  margin-top: 46px;
+}
+
+
+/* ---- stack frames -------------------------------------------------------
+   Frames share one canvas position, so they cannot sit at the shared .16 dim:
+   seven of them stacked would be mush. They cross-fade instead. */
+.section.stack-frame { opacity: 0; }
+.section.stack-frame.here { opacity: 1; z-index: 1; }
+
+/* The text column is a fixed box, so the eyebrow and heading sit at the same height
+   on all seven frames instead of re-centring as the body copy changes length. The
+   board is a constant size already, so pinning this pins the whole frame. */
+.inner.l-image-stack .col {
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.inner.l-image-stack .stack-art {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 34px;
+  align-items: center;
+}
+.inner.l-image-stack .dots { display: flex; flex-direction: column; gap: 15px; }
+.inner.l-image-stack .dots i {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.20);
+}
+.inner.l-image-stack .dots i.on {
+  background: var(--accent);
+  box-shadow: 0 0 13px rgba(232,176,75,.85);
+}
+/* The lane crops are 1385px wide and the deck will not upscale past 100%, so every
+   pixel the text column gives up is a pixel of dashboard the back row gets. The
+   headings here are two or three words and the column is a fixed-height box anyway. */
+.inner.l-image-stack .row { grid-template-columns: 540px 1fr; gap: 70px; }
+
+/* The image cell is a fixed box and the frame is centred in it. The seven captures
+   are one board and six lane crops, so their heights run from 1402px to 151px: without
+   this the frame's centre, and the dot column beside it, move on every arrow press.
+   The picture still changes size, because it is a different picture. Its centre does not. */
+.inner.l-image-stack .stack-art > div:last-child {
+  height: 690px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.inner.l-image-stack .frame { max-height: 690px; }
+.inner.l-image-stack .frame img { max-height: 670px; }
+
+/* ---- points ------------------------------------------------------------
+   The close. Alternatives rather than a sequence, so no numbers: a numeral would
+   claim an order between them that does not exist. */
+.inner.l-points { align-items: center; text-align: center; justify-content: center; }
+.inner.l-points .eyebrow::before { display: none; }
+.inner.l-points h2 { font-size: 128px; letter-spacing: -.03em; }
+.inner.l-points .points-list {
+  list-style: none;
+  margin-top: 66px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  /* the block is centred, the lines inside it are not: centred lines of different
+     lengths stagger their dashes, which reads as three accidents rather than a list */
+  text-align: left;
+}
+.inner.l-points .points-list li {
+  font-size: 46px;
+  font-variation-settings: "wght" 300, "wdth" 100;
+  color: #d5dbe6;
+}
+.inner.l-points .points-list li::before {
+  content: "";
+  display: inline-block;
+  width: 26px; height: 1px;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-right: 22px;
+  margin-bottom: 5px;
+}
+
+/* ---- agenda ------------------------------------------------------------- */
+.inner.l-agenda .agenda-list {
+  list-style: none;
+  counter-reset: agenda;
+  margin-top: 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.inner.l-agenda .agenda-list li {
+  counter-increment: agenda;
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: baseline;
+  font-size: 44px;
+  font-variation-settings: "wght" 400, "wdth" 100;
+  color: #d5dbe6;
+}
+.inner.l-agenda .agenda-list li::before {
+  content: counter(agenda, decimal-leading-zero);
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 25px;
+  letter-spacing: .22em;
+  color: var(--ink-quiet);
+}
+
+/* ---- animations ---------------------------------------------------------
+   The one place besides the track and the figure where the accent appears: the
+   frame where the run fires. Recorded in _shared/visual-language.md. */
+/* the animation docks like an asset: same frame treatment, so a screenshot can
+   replace it later without the layout changing shape */
+.inner.l-animation .anim {
+  position: relative;
+  width: 100%;
+  max-width: 940px;
+  height: 470px;
+  border: 1px solid var(--frame);
+  border-radius: 10px;
+  background: var(--ground-lift);
+  box-shadow: 0 40px 90px -30px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.4);
+  overflow: hidden;
+}
+.inner.l-animation .art { width: 100%; }
+.stage-a { position: absolute; inset: 0; }
+
+.alabel {
+  display: block;
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 17px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: inherit;
+}
+/* SwoDP is a product name and its casing is not ours to change */
+.alabel.cased { text-transform: none; letter-spacing: .1em; font-size: 19px; }
+
+.afile {
+  position: absolute;
+  top: 44px; left: 50%;
+  display: flex; align-items: center; gap: 15px;
+  background: var(--ground-lift);
+  border: 1px solid var(--frame);
+  border-radius: 7px;
+  padding: 17px 24px;
+  box-shadow: 0 24px 46px -20px rgba(0,0,0,.95);
+  transform: translate(-50%, 0) scale(1);
+  transition: transform .95s cubic-bezier(.45,.05,.25,1), opacity .45s ease;
+}
+.afile.drop { transform: translate(-50%, 218px) scale(.86); }
+.afile.gone { opacity: 0; }
+.aico {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 14px; letter-spacing: .14em;
+  background: var(--ink); color: var(--ground);
+  padding: 6px 8px; border-radius: 3px;
+}
+.aname { font-size: 22px; color: #ccd4e1; }
+
+.afolder {
+  position: absolute;
+  bottom: 74px; left: 50%;
+  width: 112px;
+  color: var(--ink-quiet);
+  text-align: center;
+  transform: translateX(-50%);
+  transition: color .4s ease, transform .4s ease;
+}
+.afolder svg { width: 100%; height: auto; display: block; }
+.afolder .alabel { margin-top: 13px; }
+.afolder.hit { color: var(--accent); transform: translateX(-50%) translateY(-5px); }
+
+.aripple {
+  position: absolute;
+  bottom: 86px; left: 50%;
+  width: 112px; height: 112px; margin-left: -56px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(.4);
+  pointer-events: none;
+}
+/* centred on the record card, so the pulse reads as leaving the thing that changed */
+.aripple.wide { top: 86px; bottom: auto; width: 240px; height: 240px; margin-left: -120px; }
+.aripple.go { animation: aripple 1.2s ease-out forwards; }
+@keyframes aripple {
+  0%   { opacity: .85; transform: scale(.4); }
+  100% { opacity: 0;   transform: scale(2.2); }
+}
+
+.arec {
+  position: absolute;
+  top: 86px; left: 50%;
+  width: 560px;
+  transform: translateX(-50%);
+  background: var(--ground-lift);
+  border: 1px solid var(--frame);
+  border-radius: 9px;
+  padding: 26px 30px 30px;
+  box-shadow: 0 24px 46px -20px rgba(0,0,0,.95);
+  color: var(--ink-quiet);
+}
+.arec i { display: block; height: 11px; border-radius: 6px; background: rgba(255,255,255,.10); margin-top: 20px; }
+.arec i.w2 { width: 72%; }
+.arec i.w3 { width: 84%; }
+.achip {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 11px 18px;
+  border-radius: 5px;
+  border: 1px solid var(--frame);
+  color: var(--ink-quiet);
+  font-size: 21px;
+  transition: color .5s ease, border-color .5s ease, background .5s ease;
+}
+.achip.on {
+  color: var(--accent);
+  border-color: rgba(232,176,75,.45);
+  background: rgba(232,176,75,.09);
+}
+
+.aspark {
+  position: absolute;
+  bottom: 30px; left: 50%;
+  transform: translate(-50%, 12px);
+  padding: 9px 16px;
+  border: 1px solid rgba(232,176,75,.4);
+  border-radius: 4px;
+  color: var(--accent);
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 16px; letter-spacing: .2em; text-transform: uppercase;
+  opacity: 0;
+  transition: opacity .5s ease, transform .5s ease;
+}
+.aspark.go { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- extract and fill ---------------------------------------------------
+   Two documents side by side, and a count that is counted rather than asserted. */
+.stage-a.xf {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 22px 24px;
+}
+.xcard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--ground-lift);
+  border: 1px solid var(--frame);
+  border-radius: 7px;
+  padding: 14px 16px 16px;
+}
+.xcap {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-quiet);
+  border-bottom: 1px solid var(--frame);
+  padding-bottom: 9px; margin-bottom: 9px;
+}
+.xrow {
+  display: grid;
+  grid-template-columns: 116px 1fr;
+  gap: 10px;
+  font-size: 14px; line-height: 1.45;
+  color: var(--ink-quiet);
+  padding: 3px 6px; margin: 0 -6px;
+  border-radius: 3px;
+  transition: color .3s ease, background .3s ease;
+}
+.xrow b { font-variation-settings: "wght" 400, "wdth" 100; overflow-wrap: anywhere; }
+.xrow.lit { color: var(--ink); background: rgba(232,176,75,.07); }
+.xrow.xref { color: var(--accent); }
+
+.xdoc .xtext { flex: 1; min-height: 0; overflow: hidden; }
+.xdoc p { font-size: 15px; line-height: 1.85; color: var(--ink-quiet); margin-bottom: 10px; }
+/* the placeholder and its value occupy the same span, so filling one cannot
+   shift the line above it */
+.xph {
+  border-bottom: 1px solid var(--frame);
+  padding: 0 2px;
+  transition: color .3s ease, border-color .3s ease, background .3s ease;
+}
+.xph i, .xph em { font-style: normal; }
+.xph em { display: none; }
+.xph.fill { color: var(--ink); border-bottom-color: rgba(232,176,75,.5);
+            background: rgba(232,176,75,.10); }
+.xph.fill i { display: none; }
+.xph.fill em { display: inline; }
+
+.xfoot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  border-top: 1px solid var(--frame);
+  padding-top: 11px; margin-top: 9px;
+}
+.xcount { font-size: 14px; color: var(--ink-quiet); }
+.xcount b {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 24px; color: var(--accent); margin-right: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.xchip {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 13px; letter-spacing: .16em;
+  padding: 5px 10px; border-radius: 3px;
+  border: 1px solid var(--frame); color: var(--ink-quiet);
+  opacity: .35;
+  transition: opacity .5s ease, color .5s ease, border-color .5s ease, background .5s ease;
+}
+.xchip.in {
+  opacity: 1; color: var(--accent);
+  border-color: rgba(232,176,75,.45); background: rgba(232,176,75,.09);
+}
+
+/* ---- they sign by hand --------------------------------------------------- */
+.stage-a.sg { display: flex; align-items: center; justify-content: center; }
+.scard {
+  width: 560px;
+  background: var(--ground-lift);
+  border: 1px solid var(--frame);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 24px 46px -20px rgba(0,0,0,.95);
+}
+.schrome {
+  display: flex; align-items: center; gap: 7px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--frame);
+  background: rgba(255,255,255,.03);
+}
+.schrome i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.14); }
+.surl { margin-left: 12px; font-size: 14px; color: var(--ink-quiet); }
+.sbody { padding: 20px 26px 24px; }
+.sfield {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink-quiet); margin-bottom: 8px;
+}
+.sname {
+  display: flex; align-items: center;
+  height: 42px; padding: 0 12px; margin-bottom: 18px;
+  border: 1px solid var(--frame); border-radius: 4px;
+  font-size: 20px; color: var(--ink);
+  transition: border-color .3s ease;
+}
+.sname.active { border-color: rgba(232,176,75,.55); }
+.scaret { width: 2px; height: 22px; margin-left: 2px; background: var(--accent); opacity: 0; }
+.scaret.on { animation: scaret .9s steps(1) infinite; }
+@keyframes scaret { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+.spad {
+  position: relative;
+  height: 132px;
+  border: 1px solid var(--frame); border-radius: 4px;
+  background: rgba(255,255,255,.02);
+  transition: border-color .3s ease;
+}
+.spad.active { border-color: rgba(232,176,75,.55); }
+.spad svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.spadline { position: absolute; left: 22px; right: 22px; bottom: 26px;
+            border-bottom: 1px solid var(--frame); }
+/* pathLength is 1, so one dash covers the whole stroke however the path is edited.
+   The cap is butt until the stroke starts: a round cap on a fully hidden dash still
+   paints a dot at the end of the path, which looked like a speck on the pad. */
+.sigpath {
+  fill: none; stroke: var(--ink); stroke-width: 2.2;
+  stroke-linecap: butt; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+}
+.sigpath.draw {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 2.4s cubic-bezier(.5,.1,.4,.9);
+  stroke-dashoffset: 0;
+}
+
+.sbtn {
+  display: inline-block; margin-top: 20px;
+  padding: 11px 20px; border-radius: 4px;
+  border: 1px solid var(--frame); color: var(--ink-quiet);
+  font-size: 18px;
+  transition: color .4s ease, border-color .4s ease, background .4s ease, transform .18s ease;
+}
+.sbtn.armed { color: var(--accent); border-color: rgba(232,176,75,.45); }
+.sbtn.press { background: rgba(232,176,75,.14); transform: translateY(1px); }
+
+/* ---- or upload a photograph ----------------------------------------------
+   Everything here is positioned against the 940x470 animation box, because the
+   ink has to travel from a point inside the photograph to a point inside the
+   contract's frame, and a transform between two known points is the only way to
+   make that read as one object moving rather than two objects cross-fading. */
+.uphoto {
+  position: absolute;
+  left: 30px; top: 132px; width: 360px; height: 170px;
+  border: 1px solid var(--frame); border-radius: 5px;
+  overflow: hidden;
+  transition: opacity .6s ease;
+}
+/* once the ink has gone into the contract the photograph is spent, and an empty
+   transparency checker left at full strength competes with the thing that matters */
+.uphoto.gone { opacity: .3; }
+/* the sign for an alpha channel, and the reason the ink stays readable: it is
+   never over the dark ground */
+.uchecker {
+  position: absolute; inset: 0;
+  background-color: #dfe3e9;
+  background-image:
+    linear-gradient(45deg, #c5cad3 25%, transparent 25%, transparent 75%, #c5cad3 75%),
+    linear-gradient(45deg, #c5cad3 25%, transparent 25%, transparent 75%, #c5cad3 75%);
+  background-size: 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+/* black marker on grey paper in poor light. The real fixture's brightest pixel
+   is 139, so this is not a white sheet and must not look like one. */
+.upaper {
+  position: absolute; inset: 0;
+  background: linear-gradient(128deg, #74766c 0%, #4c4e47 55%, #616359 100%);
+  transition: opacity .75s ease;
+}
+.upaper.gone { opacity: 0; }
+
+.ucap {
+  position: absolute;
+  left: 30px; top: 314px;
+  font-variation-settings: "wght" 500, "wdth" 75;
+  font-size: 14px; letter-spacing: .12em;
+  color: var(--ink-quiet);
+}
+.uread {
+  position: absolute;
+  left: 30px; top: 92px;
+  padding: 5px 11px; border-radius: 3px;
+  border: 1px solid rgba(232,176,75,.4);
+  color: var(--accent);
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 14px; letter-spacing: .18em; text-transform: uppercase;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+.uread.go { opacity: 1; transform: translateY(0); }
+
+/* a slice of the contract, light because the page is light. The frame in it is
+   already exactly 3:1 and does not move when the signature arrives. */
+.udoc {
+  position: absolute;
+  left: 545px; top: 104px; width: 365px; height: 272px;
+  background: #eceef2;
+  border-radius: 4px;
+  padding: 22px 26px;
+  box-shadow: 0 30px 60px -24px rgba(0,0,0,.9);
+}
+.udoc .ul { display: block; height: 7px; border-radius: 4px; background: #ccd0d8; margin-bottom: 11px; }
+.udoc .ul.w2 { width: 78%; }
+.udoc .ul.w3 { width: 88%; }
+.ubox {
+  position: absolute;
+  left: 32px; top: 124px; width: 300px; height: 100px;
+  border: 1px dashed #b3b9c4; border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .5s ease, background .5s ease;
+}
+.ubox.in { border-style: solid; border-color: rgba(200,150,60,.75); background: rgba(232,176,75,.10); }
+.uboxl {
+  font-variation-settings: "wght" 600, "wdth" 75;
+  font-size: 12px; letter-spacing: .14em;
+  color: #99a1ad;
+  transition: opacity .4s ease;
+}
+.ubox.in .uboxl { opacity: 0; }
+.udim {
+  position: absolute;
+  left: 32px; top: 240px;
+  font-variation-settings: "wght" 500, "wdth" 75;
+  font-size: 12px; letter-spacing: .12em;
+  color: #99a1ad;
+}
+
+/* starts inside the photograph, ends inside the frame. The scale is the ratio of
+   the two boxes, so the ink keeps its own proportions the whole way. */
+.uink {
+  position: absolute;
+  left: 60px; top: 152px; width: 300px; height: 120px;
+  transform-origin: 0 0;
+  transition: transform .9s cubic-bezier(.5,.05,.25,1);
+}
+.uink.land { transform: translate(547px, 78px) scale(.8); }
+.uink svg { width: 100%; height: 100%; display: block; }
+.uink path {
+  fill: none; stroke: #14181f; stroke-width: 2.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ---- held content ------------------------------------------------------
+   A Section with holdText renders here, in screen space, instead of on the
+   canvas. Counter-scaling the DOM by 1/0.036 was the obvious way to do it and
+   it clips: Chrome rasterises a transformed layer at a bounded texture size,
+   so a 28x scale loses the middle of the glyphs. Screen space has no such
+   limit, and "the words do not move while the world pulls back" is what the
+   moment actually wants. */
+#held { position: absolute; inset: 0; z-index: 4; pointer-events: none;
+        display: flex; align-items: center; justify-content: center; }
+#held .inner {
+  position: absolute;
+  opacity: 0;
+  transform: scale(var(--fit, 1));
+  transition: opacity var(--dur) var(--easing);
+}
+#held .inner.here { opacity: 1; }
+/* clear the track, which at a deep pull-back sits across the middle of the frame */
+#held .inner.l-title { transform: scale(var(--fit, 1)) translateY(-190px); }
+
+/* ---- chrome ------------------------------------------------------------- */
+#badge, #hint {
+  position: absolute;
+  z-index: 6;
+  font-variation-settings: "wght" 500, "wdth" 75;
+  font-size: 15px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+}
+#badge {
+  top: 38px; left: 130px;
+  transition: opacity 400ms ease;
+  color: var(--accent);
+  border: 1px solid rgba(232,176,75,.35);
+  border-radius: 3px;
+  padding: 7px 14px 6px;
+}
+#hint { bottom: 66px; right: 130px; opacity: .55; transition: opacity 600ms ease; }
+#hint.gone, #badge.gone { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #ground, #camera, #canvas, .section { transition-duration: 0ms !important; }
+  .afile, .afolder, .achip, .aspark,
+  .xrow, .xph, .xchip, .sname, .spad, .sbtn,
+  .upaper, .uread, .uink, .ubox, .uboxl { transition: none !important; }
+  .aripple.go { animation: none !important; }
+  .scaret.on { animation: none !important; opacity: 0; }
+  .sigpath.draw { transition: none !important; }
+}

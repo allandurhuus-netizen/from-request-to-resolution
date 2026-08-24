@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From sheet to signature</title>
+<link rel="stylesheet" href="engine/engine.css">
+</head>
+<body>
+
+<div id="viewport">
+  <div id="ground" aria-hidden="true"></div>
+  <div id="camera">
+    <div id="canvas">
+      <svg id="track" aria-hidden="true"></svg>
+      <div id="stage"></div>
+    </div>
+  </div>
+
+  <div id="held" aria-hidden="false"></div>
+
+  <div id="badge" data-when="dummy">Placeholder</div>
+  <div id="hint">&larr; &rarr; sections &nbsp;&middot;&nbsp; &uarr; &darr; sub-views &nbsp;&middot;&nbsp; F full screen</div>
+</div>
+
+<script src="config/show.js"></script>
+<script src="engine/engine.js"></script>
+</body>
+</html>
