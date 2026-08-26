@@ -48,13 +48,50 @@
 
   const esc = s => String(s ?? "").replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
+  // A clip is anything that plays: a video, or a .gif, which plays in an <img> and so
+  // cannot be told to wait. Marked here, started on arrival by startMedia().
+  const isClip = asset => asset.type === "video" || /\.gif$/i.test(asset.src || "");
+
   function frame(asset) {
     if (!asset) return "";
     const media = asset.type === "video"
-      ? `<video src="${esc(asset.src)}" muted playsinline${asset.autoplay ? " autoplay loop" : ""}></video>`
-      : `<img src="${esc(asset.src)}" alt="">`;
+      ? `<video class="clip" src="${esc(asset.src)}" muted playsinline${asset.autoplay ? " loop" : ""}></video>`
+      : `<img class="${isClip(asset) ? "clip" : ""}" src="${esc(asset.src)}" alt="">`;
     return `<div class="frame">${media}</div>` +
            (asset.caption ? `<p class="caption">${esc(asset.caption)}</p>` : "");
+  }
+
+  /* Clips start at the stop, not at page load and not during the move.
+     The src stays on the element from the start so the frame is the right size and the
+     picture is already decoded when the camera lands.
+
+     A video rewinds. A .gif has no currentTime, and the obvious tricks do not work:
+     the browser keeps one animation clock per decoded image and shares it with every
+     element showing that URL, so neither re-setting the same src nor replacing the
+     element with a copy of itself rewinds one. A URL it has not seen before is a new
+     decode and a new clock, which is what the counter on the query buys. Checked from a
+     file URL as well as from a served one, because the deck is opened by double-clicking
+     show.html and a query on a file URL is not obviously legal. */
+  let clipTick = 0;
+
+  function startMedia(sv) {
+    const root = sv._inner;
+    if (!root) return;
+    root.querySelectorAll("video.clip").forEach(v => {
+      v.currentTime = 0;
+      const played = v.play();
+      if (played) played.catch(() => {});
+    });
+    clipTick++;
+    root.querySelectorAll("img.clip").forEach(img => {
+      const base = img.dataset.clip || (img.getAttribute("src") || "").split("?")[0];
+      img.dataset.clip = base;
+      img.src = base + "?r=" + clipTick;
+    });
+  }
+
+  function stopMedia() {
+    document.querySelectorAll("video.clip").forEach(v => v.pause());
   }
 
   function head(sv) {
@@ -73,7 +110,7 @@
       html:
         '<div class="stage-a">' +
           '<div class="afile"><span class="aico">PDF</span>' +
-            '<span class="aname">company-sheet.pdf</span></div>' +
+            '<span class="aname">SwoDP-Export.pdf</span></div>' +
           '<div class="aripple"></div>' +
           '<div class="afolder">' +
             '<svg viewBox="0 0 48 38" fill="none" stroke="currentColor" stroke-width="1.6">' +
@@ -141,12 +178,12 @@
         html:
           '<div class="stage-a xf">' +
             '<div class="xcard">' +
-              '<span class="xcap">company-sheet.pdf</span>' +
+              '<span class="xcap">SwoDP Export</span>' +
               '<div class="xrow xref"><span>Reference</span><b>CIS-2026-0149</b></div>' +
               F.map(row).join("") +
             '</div>' +
             '<div class="xcard xdoc">' +
-              '<span class="xcap">Customer_Agreement.docx</span>' +
+              '<span class="xcap">Final Customer Document</span>' +
               '<div class="xtext">' +
                 '<p>Made between the supplier and ' + ph(0) + ' of ' + ph(1) +
                   ', ' + ph(2) + '.</p>' +
@@ -324,7 +361,10 @@
     node.style.top = ((section.stack ? 0 : y(j)) - DESIGN_H / 2) + "px";
 
     const inner = document.createElement("div");
-    inner.className = `inner l-${sv.layout}`;
+    // tall: this capture is a whole scrolling page, so the docked ceiling is raised
+    // to the edge of the box. Still content-blind, the engine only knows "docked tall".
+    inner.className = `inner l-${sv.layout}${sv.tall ? " tall" : ""}` +
+                      (sv.tall === "full" ? " full" : "");
     inner.innerHTML = (LAYOUT[sv.layout] || LAYOUT["text-only"])(sv);
     // holdText: counter-scale by exactly the camera's pull-back, so the words stay
     // the same size on screen while the world shrinks away behind them.
@@ -451,7 +491,7 @@
 
   /* ---------- camera ----------------------------------------------------- */
 
-  let i = 0, j = 0, locked = false, lockTimer = 0;
+  let i = 0, j = 0, locked = false, lockTimer = 0, arriveTimer = 0;
 
   const fit = () => Math.min(innerWidth / DESIGN_W, innerHeight / DESIGN_H);
 
@@ -487,7 +527,23 @@
     sv._inner.classList.add("here");
 
     resetAnims();
-    if (sv.layout === "animation") playAnim(sv._inner.querySelector(".anim"), sv.animation);
+    // resetAnims puts the classes back; the text an animation writes is its own to put
+    // back, and it has to happen now rather than at arrival, or the stop shows the end
+    // of the last run for the length of the move.
+    if (sv.layout === "animation") {
+      const spec = ANIMATIONS[sv.animation];
+      if (spec && spec.reset) spec.reset(sv._inner.querySelector(".anim"));
+    }
+    stopMedia();
+    // Nothing plays while the camera is moving. An animation that runs through the
+    // travel is half over by the time anyone can read it, and a clip that starts
+    // early is a clip the audience joins in the middle.
+    clearTimeout(arriveTimer);
+    const arrive = () => {
+      if (sv.layout === "animation") playAnim(sv._inner.querySelector(".anim"), sv.animation);
+      startMedia(sv);
+    };
+    if (dur) arriveTimer = setTimeout(arrive, dur); else arrive();
     markPlaceholder(sv);
   }
 

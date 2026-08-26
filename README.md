@@ -1,4 +1,4 @@
-# From sheet to signature
+# From Request to Resolution
 
 An offline, keyboard-driven presentation about the `contract-approve` automation.
 

@@ -184,13 +184,19 @@ h2 {
 .inner.l-text-only h2 { max-width: 17ch; }
 .inner.l-text-only .body { max-width: 40ch; font-size: 31px; }
 
+/* The standard placement, and the reason the gutter is this wide rather than a
+   comfortable 90px: the track runs down the middle of every Section box, at x=960,
+   which is 830 into the 1660px content box. The art column opens at 855 so the
+   picture stands 25px clear of the line and reads as docked to it. One rule for all
+   four asset layouts, so a picture, a pair and an animation all land in the same
+   place and a run of them reads as one motion. */
 .inner.l-single-asset .row,
 .inner.l-image-stack .row,
 .inner.l-animation .row,
 .inner.l-asset-pair .row {
   display: grid;
   grid-template-columns: 600px 1fr;
-  gap: 90px;
+  gap: 255px;
   align-items: center;
 }
 .inner.l-single-asset .art { display: flex; flex-direction: column; align-items: flex-start; }
@@ -199,16 +205,34 @@ h2 {
 .inner.l-single-asset .frame { max-height: 700px; }
 .inner.l-single-asset .frame img { max-height: 680px; }
 
+/* tall: a whole scrolling page docked at full height. The box is re-padded rather
+   than the frame alone, because the row centres on the padding box and the words
+   have to travel with the picture. The floor is 920, not 1060: the track runs
+   through the box at y=970 and its lit station ball carries a glow, so a picture
+   that stops at 20px from the bottom edge would sit on top of the one saturated
+   thing on screen. Above, 20px is the whole slack there is. */
+.inner.l-single-asset.tall { padding: 20px 130px 160px; }
+.inner.l-single-asset.tall .frame { max-height: 900px; }
+.inner.l-single-asset.tall .frame img { max-height: 878px; }
+
+/* tall: full, for a stop where the track through the box is a vertical spur rather
+   than the main line. The picture takes the whole height, 20px off both edges, and
+   the art column starts to the right of the spur at x=960 so the descent and the
+   station ball it ends on stay in view beside the picture instead of behind it. */
+.inner.l-single-asset.tall.full { padding: 20px 130px; }
+.inner.l-single-asset.tall.full .frame { max-height: 1040px; }
+.inner.l-single-asset.tall.full .frame img { max-height: 1018px; }
+
 /* Two assets docked in the art column, side by side, each half of it minus the gap.
    The frames size to their pictures and sit adjacent: stretching each half of the row
    to 50% parked them at opposite ends of the screen with a hole in the middle. */
 .inner.l-asset-pair .art { min-width: 0; }
-.inner.l-asset-pair .pair { display: flex; gap: 50px; align-items: flex-start; min-height: 0; }
+.inner.l-asset-pair .pair { display: flex; gap: 45px; align-items: flex-start; min-height: 0; }
 .inner.l-asset-pair .pair > div { flex: 0 0 auto; min-width: 0; }
 /* height-bounded so a portrait document cannot outgrow the 1080 box and push the
    heading off the top, which is what the pair did at full HD before this cap */
-.inner.l-asset-pair .frame { max-width: 460px; }
-.inner.l-asset-pair .frame img { max-width: 440px; max-height: 620px; }
+.inner.l-asset-pair .frame { max-width: 380px; }
+.inner.l-asset-pair .frame img { max-width: 358px; max-height: 620px; }
 
 /* the one heightened beat. Section scale pulls the camera back so both lanes
    are in frame at once, which is the whole point of the moment. */
@@ -266,13 +290,16 @@ h2 {
   flex-direction: column;
   justify-content: flex-start;
 }
+/* Dots on the outside, not between the line and the picture: the frame has to start
+   at the line like every other docked asset, and 48px of dot column in front of it
+   would be 48px off the widest captures in the deck. */
 .inner.l-image-stack .stack-art {
   display: grid;
-  grid-template-columns: 14px 1fr;
+  grid-template-columns: 1fr 14px;
   gap: 34px;
   align-items: center;
 }
-.inner.l-image-stack .dots { display: flex; flex-direction: column; gap: 15px; }
+.inner.l-image-stack .dots { display: flex; flex-direction: column; gap: 15px; order: 2; }
 .inner.l-image-stack .dots i {
   width: 10px; height: 10px;
   border-radius: 50%;
@@ -282,10 +309,8 @@ h2 {
   background: var(--accent);
   box-shadow: 0 0 13px rgba(232,176,75,.85);
 }
-/* The lane crops are 1385px wide and the deck will not upscale past 100%, so every
-   pixel the text column gives up is a pixel of dashboard the back row gets. The
-   headings here are two or three words and the column is a fixed-height box anyway. */
-.inner.l-image-stack .row { grid-template-columns: 540px 1fr; gap: 70px; }
+/* No text-column override here any more: the art column is anchored to the spine, so
+   pixels the words give up are not pixels the dashboard gets. It shares the standard. */
 
 /* The image cell is a fixed box and the frame is centred in it. The seven captures
    are one board and six lane crops, so their heights run from 1402px to 151px: without
@@ -503,9 +528,11 @@ h2 {
   border-radius: 7px;
   padding: 14px 16px 16px;
 }
+/* not uppercased, unlike every other label on screen: these two carry document
+   names, and SwoDP is not SWODP. */
 .xcap {
   font-variation-settings: "wght" 600, "wdth" 75;
-  font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 13px; letter-spacing: .14em;
   color: var(--ink-quiet);
   border-bottom: 1px solid var(--frame);
   padding-bottom: 9px; margin-bottom: 9px;

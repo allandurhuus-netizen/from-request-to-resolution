@@ -20,9 +20,10 @@ window.DECK_CONFIG = {
         {
           "id": "main",
           "layout": "title",
-          "eyebrow": "Contract approval",
-          "heading": "From sheet to signature",
-          "body": "A company information sheet goes in. A signed contract comes out. The two decisions that matter are still made by people.",
+          "eyebrow": "Contract/CR-Request approval",
+          "heading": "From Request to Resolution",
+          "body": "From system data to signature-ready. Data becomes documentation. Decisions stay human.",
+          "tall": false,
           "asset": null
         }
       ]
@@ -40,13 +41,14 @@ window.DECK_CONFIG = {
           "id": "main",
           "layout": "agenda",
           "eyebrow": "",
-          "heading": "What we will walk through",
+          "heading": "What we'll walk through",
           "body": "",
+          "tall": false,
           "items": [
-            "The monitor, where every run shows itself",
-            "How a contract gets made today",
-            "The new process, start to finish",
-            "The signed contract, and who gets it"
+            "The Monitor - See every Workflow run in one place",
+            "Today's Process - How contracts and CR-Requests are created today",
+            "The New Process - From start to finish",
+            "The Final Contract - Signed, stored, and shared"
           ],
           "asset": null
         }
@@ -65,8 +67,9 @@ window.DECK_CONFIG = {
           "id": "a",
           "layout": "image-stack",
           "eyebrow": "The automation monitor",
-          "heading": "Every run, one row",
-          "body": "One line per run, grouped by what it is waiting for. Anything red sits at the top.",
+          "heading": "End-to-End Workflow Monitoring",
+          "body": "Track each workflow from start to finish, monitor its health, and quickly identify where something needs attention.",
+          "tall": false,
           "stackIndex": 0,
           "stackCount": 7,
           "asset": {
@@ -81,7 +84,8 @@ window.DECK_CONFIG = {
           "layout": "image-stack",
           "eyebrow": "The automation monitor",
           "heading": "Running",
-          "body": "The step it is on, out of how many, and the time it last moved. It updates while you watch it.",
+          "body": "The Workflow is currently in progress and moving through the required process steps.",
+          "tall": false,
           "stackIndex": 1,
           "stackCount": 7,
           "asset": {
@@ -96,7 +100,8 @@ window.DECK_CONFIG = {
           "layout": "image-stack",
           "eyebrow": "The automation monitor",
           "heading": "Pending approval",
-          "body": "Step 4 of 9, and it will sit there until a person answers. Waiting is not failing.",
+          "body": "The workflow has reached an approval step and will continue once the required Human-made decision is received.",
+          "tall": false,
           "stackIndex": 2,
           "stackCount": 7,
           "asset": {
@@ -111,7 +116,8 @@ window.DECK_CONFIG = {
           "layout": "image-stack",
           "eyebrow": "The automation monitor",
           "heading": "Awaiting signature",
-          "body": "When the link went out, and how long it has been waiting. Two days and three hours, on this one.",
+          "body": "The document has been sent and is waiting for the required signature before continuing.",
+          "tall": false,
           "stackIndex": 3,
           "stackCount": 7,
           "asset": {
@@ -127,6 +133,7 @@ window.DECK_CONFIG = {
           "eyebrow": "The automation monitor",
           "heading": "Succeeded",
           "body": "Contract signed, register updated. Green means the work was really delivered, not that the code ran.",
+          "tall": false,
           "stackIndex": 4,
           "stackCount": 7,
           "asset": {
@@ -141,7 +148,8 @@ window.DECK_CONFIG = {
           "layout": "image-stack",
           "eyebrow": "The automation monitor",
           "heading": "Failed",
-          "body": "The step it died on and the reason in the words the service gave. Word Online refused the document, and it says so.",
+          "body": "The workflow encountered an issue. The affected step and system-provided reason will be clearly identified.",
+          "tall": false,
           "stackIndex": 5,
           "stackCount": 7,
           "asset": {
@@ -156,7 +164,8 @@ window.DECK_CONFIG = {
           "layout": "image-stack",
           "eyebrow": "The automation monitor",
           "heading": "Failed, and dealt with",
-          "body": "A failure someone has acknowledged. It stays on the board, ticked, rather than disappearing once it has been read.",
+          "body": "The issue has been acknowledged and addressed, while remaining visible for transparency and tracking.",
+          "tall": false,
           "stackIndex": 6,
           "stackCount": 7,
           "asset": {
@@ -179,10 +188,11 @@ window.DECK_CONFIG = {
       "subviews": [
         {
           "id": "main",
-          "layout": "text-only",
+          "layout": "title",
           "eyebrow": "Part one",
-          "heading": "Today, somebody retypes it",
-          "body": "Open the sheet. Copy eleven values into the contract by hand. Export it, email it, chase the signature, file it. Every one of those steps is a chance to mistype something.",
+          "heading": "Today, One Request Starts a Chain of Manual Work",
+          "body": "One customer request triggers multiple rounds of data entry, approvals, document creation, handoffs, and signatures. The same information is repeatedly entered, reviewed, sent, signed, and tracked across the process and the project or change can't begin until the entire chain is complete.",
+          "tall": false,
           "asset": null
         }
       ]
@@ -201,7 +211,8 @@ window.DECK_CONFIG = {
           "layout": "title",
           "eyebrow": "Part two",
           "heading": "The new process",
-          "body": "The same contract, and nobody retypes anything.",
+          "body": "Enter Once. Automate the Rest.",
+          "tall": false,
           "asset": null
         }
       ]
@@ -218,9 +229,10 @@ window.DECK_CONFIG = {
         {
           "id": "main",
           "layout": "animation",
-          "eyebrow": "The way in",
-          "heading": "Drop the sheet in a folder",
-          "body": "SharePoint. Nothing new to learn.",
+          "eyebrow": "The manual effort",
+          "heading": "Drop the system data into the SharePoint folder",
+          "body": "That's it. No AI, no additional tooling, the workflow takes over from there.",
+          "tall": false,
           "animation": "sharepoint-drop",
           "asset": null
         }
@@ -239,8 +251,9 @@ window.DECK_CONFIG = {
           "id": "a",
           "layout": "asset-pair",
           "eyebrow": "Part two",
-          "heading": "In, and out",
-          "body": "Same eleven values, same reference.",
+          "heading": "One Input. Automation Does the Rest.",
+          "body": "Enter the required information in the system, export the PDF. Drop it in the SharePoint Folder.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/company-information-sheet.png",
@@ -266,8 +279,9 @@ window.DECK_CONFIG = {
           "id": "b",
           "layout": "animation",
           "eyebrow": "Part two",
-          "heading": "It reads the sheet and fills the contract",
-          "body": "Eleven fields. Twenty-two places. No AI, and no guessing.",
+          "heading": "No duplicate manual effort",
+          "body": "The Automation extracts the data already entered, maps it to the right fields, and builds the customer document.",
+          "tall": false,
           "animation": "extract-fill",
           "asset": null
         }
@@ -285,9 +299,10 @@ window.DECK_CONFIG = {
         {
           "id": "a",
           "layout": "single-asset",
-          "eyebrow": "The first decision",
-          "heading": "Everything happens in Teams",
-          "body": "One card carrying the uploaded file, the draft it produced, and all eleven values. Nothing reaches the customer until somebody ticks the box.",
+          "eyebrow": "The human decision",
+          "heading": "Everything is brought together in one place for review",
+          "body": "The user is notified via Teams that the generated document and all extracted values are ready for review.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/teams-approval-card.png",
@@ -298,9 +313,10 @@ window.DECK_CONFIG = {
         {
           "id": "b",
           "layout": "single-asset",
-          "eyebrow": "The first decision",
-          "heading": "And the values can be corrected",
-          "body": "Edit the values, and every field opens. Whatever is in those boxes when you approve is what goes into the contract, whether or not you changed it.",
+          "eyebrow": "The human decision",
+          "heading": "Adjust Before You Approve",
+          "body": "Any extracted value can be updated directly during the review. The final approved values, whether unchanged or corrected, are then used to generate the customer document.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/teams-approval-editing.png",
@@ -311,9 +327,10 @@ window.DECK_CONFIG = {
         {
           "id": "c",
           "layout": "single-asset",
-          "eyebrow": "The first decision",
-          "heading": "Or the same thing by email",
-          "body": "A one-time link to a page that does what the card does. It exists because the Teams bot does not reach people outside the tenant, which we found with a real external uploader rather than by guessing.",
+          "eyebrow": "The human decision",
+          "heading": "Or, Take It to Email",
+          "body": "The same review and approval can be completed via email when preferred. A secure, one-time link takes the user directly to the review page.",
+          "tall": "full",
           "asset": {
             "type": "image",
             "src": "assets/show/email-approval-page.png",
@@ -335,9 +352,10 @@ window.DECK_CONFIG = {
         {
           "id": "a",
           "layout": "single-asset",
-          "eyebrow": "The second decision",
-          "heading": "The customer opens a link",
-          "body": "No account, no app, nothing to install. The whole contract to read, then four things to do, numbered.",
+          "eyebrow": "The customer experience",
+          "heading": "Direct Access.",
+          "body": "No downloading attachments, no additional access rights for an account, app, or installation required. The full document is ready to review, with four clear steps guiding the user through the process.",
+          "tall": true,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-page.png",
@@ -348,9 +366,10 @@ window.DECK_CONFIG = {
         {
           "id": "b",
           "layout": "single-asset",
-          "eyebrow": "The second decision",
-          "heading": "They sign by hand",
-          "body": "Mouse, finger or stylus. The same page on a phone.",
+          "eyebrow": "The customer experience",
+          "heading": "Signature, Built In.",
+          "body": "Customers sign directly within the experience from anywhere, using a mouse, finger, or stylus, removing the need for additional e-signature tools and their associated licensing costs.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-draw.gif",
@@ -361,9 +380,10 @@ window.DECK_CONFIG = {
         {
           "id": "c",
           "layout": "single-asset",
-          "eyebrow": "The second decision",
-          "heading": "Or upload a photograph of a signature",
-          "body": "Ink on paper, photographed in bad light. The preview keeps the paper. The contract does not.",
+          "eyebrow": "The customer experience",
+          "heading": "Sign Your Way",
+          "body": "Prefer a handwritten signature? Simply upload a photo of it. The workflow extracts the signature and places it cleanly into the document.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-upload.gif",
@@ -374,9 +394,10 @@ window.DECK_CONFIG = {
         {
           "id": "d",
           "layout": "single-asset",
-          "eyebrow": "The second decision",
-          "heading": "And that is the agreement",
-          "body": "Name typed, both boxes ticked, one button. It comes back with the reference, who signed, and when, to the second.",
+          "eyebrow": "The customer experience",
+          "heading": "Agreement, Confirmed",
+          "body": "With the final confirmation, the agreement is complete. The Automation captures the reference, signer, and exact timestamp, creating a clear record of who agreed and when.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-approve.gif",
@@ -398,9 +419,10 @@ window.DECK_CONFIG = {
         {
           "id": "a",
           "layout": "single-asset",
-          "eyebrow": "What lands",
-          "heading": "Both sides get the signed contract",
-          "body": "One email each, one attachment: to the customer, and to the person who started it.",
+          "eyebrow": "Signed. Sent. Complete.",
+          "heading": "Everyone receives a final copy",
+          "body": "The completed contract is sent directly to both the customer and the process initiator.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signed-contract.png",
@@ -411,9 +433,10 @@ window.DECK_CONFIG = {
         {
           "id": "b",
           "layout": "single-asset",
-          "eyebrow": "What lands",
-          "heading": "And a fixed copy, if you want one",
-          "body": "A storage mailbox, or the GISO team, can be added as a standing recipient on every contract.",
+          "eyebrow": "Signed. Sent. Complete.",
+          "heading": "Keep the right people informed",
+          "body": "Additional contacts, such as Account Managers or the GISO team can be automatically copied on the final notification, ensuring everyone who needs to know is informed once the process is complete.",
+          "tall": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signed-contract.png",
@@ -438,6 +461,7 @@ window.DECK_CONFIG = {
           "eyebrow": "",
           "heading": "IMAGINE",
           "body": "",
+          "tall": false,
           "items": [
             "Connected to CRM",
             "Connected to SwoDP",
