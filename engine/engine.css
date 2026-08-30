@@ -151,6 +151,43 @@ h2 {
   max-width: 30ch;
   margin-top: 30px;
 }
+/* A body written as several lines sets its own breaks, so the measure that would
+   otherwise wrap it is lifted and each line stands on its own row. The rows sit
+   a little further apart than a wrapped paragraph's, because each one is a whole
+   thought and wants to be read as one. */
+.body.lined { max-width: none; line-height: 1.62; }
+.body.lined span, .body.lined li { display: block; }
+/* an empty line in the record: air above the line that follows, not a blank row */
+.body.lined .air { margin-top: .85em; }
+
+/* The accent rule the closing points carry, at body size. The block is centred,
+   the lines inside it are not: centred lines of different lengths stagger their
+   rules, which reads as three accidents rather than a list. */
+.body.bullets {
+  list-style: none;
+  text-align: left;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* the rule hangs in the indent, so a bullet that runs to a second line sets that
+   line under its own first word rather than under the rule */
+.body.bullets li { padding-left: 44px; text-indent: -44px; }
+.body.bullets li br { text-indent: 0; }
+/* only a list that actually wraps opens air between its bullets: where every
+   bullet is one line the rules already space themselves */
+.body.bullets.wrapped li + li { margin-top: .45em; }
+.body.bullets li::before {
+  content: "";
+  display: inline-block;
+  /* 2px, not the eyebrow's hairline: the deck is drawn at 1920 and shown scaled,
+     and a 1px rule lands on a fractional pixel and washes out on some rows */
+  width: 26px; height: 2px;
+  background: var(--accent);
+  vertical-align: middle;
+  margin-right: 18px;
+  margin-bottom: 5px;
+}
 
 /* ---- asset frames -------------------------------------------------------
    Windows docked into the canvas, never full-bleed, one size ceiling for all
@@ -179,7 +216,12 @@ h2 {
 .inner.l-title { align-items: center; text-align: center; justify-content: center; }
 .inner.l-title .eyebrow::before { display: none; }
 .inner.l-title h2 { font-size: 128px; letter-spacing: -.03em; max-width: 20ch; }
+/* A title written across three or more lines steps down: at 128px the block
+   outgrows the box and crowds the eyebrow into the top edge. */
+.inner.l-title h2.rows-3 { font-size: 96px; }
+.inner.l-title h2.rows-4 { font-size: 82px; }
 .inner.l-title .body { max-width: 42ch; margin-top: 42px; }
+.inner.l-title .body.lined { max-width: none; }
 
 .inner.l-text-only h2 { max-width: 17ch; }
 .inner.l-text-only .body { max-width: 40ch; font-size: 31px; }

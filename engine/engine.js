@@ -94,9 +94,17 @@
     document.querySelectorAll("video.clip").forEach(v => v.pause());
   }
 
+  // A heading written as several lines breaks where it was written. A one-line
+  // heading still wraps on its own measure, so nothing else in the deck moves.
+  const lines = value => String(value ?? "").split("\n").map(l => l.trim());
+
   function head(sv) {
+    const rows = lines(sv.heading).filter(Boolean);
+    // the row count travels to the stylesheet: a title broken into three lines
+    // needs a smaller size than one, or the block outgrows its box
     return (sv.eyebrow ? `<p class="eyebrow">${esc(sv.eyebrow)}</p>` : "") +
-           `<h2>${esc(sv.heading)}</h2>`;
+           `<h2 class="rows-${Math.min(rows.length, 4)}">` +
+             rows.map(esc).join("<br>") + `</h2>`;
   }
 
   /* ---------- animations ---------------------------------------------------
@@ -289,15 +297,46 @@
     }
   };
 
+  // A body written as several lines keeps those breaks on screen: one line per
+  // sentence or clause, so a long claim is read in pieces instead of as a wall.
+  // An empty line ends a group. That one mark reads two ways, which are the same
+  // decision: without bullets a group break is air, with them it is the next
+  // bullet, so a bullet may run to a second line without starting a new one.
+  // A single-line body is unchanged, so nothing else in the deck moves.
+  const body = sv => {
+    const groups = [[]];
+    for (const line of lines(sv.body)) {
+      const open = groups[groups.length - 1];
+      if (line) open.push(line);
+      else if (open.length) groups.push([]);   // a run of empty lines is one break
+    }
+    const kept = groups.filter(g => g.length);
+    if (!kept.length) return "";
+    if (kept.length === 1 && kept[0].length === 1) {
+      return `<p class="body">${esc(kept[0][0])}</p>`;
+    }
+    // bullets carry the accent rule the closing points carry, at body size: the
+    // block is centred, the lines inside it are not, so the rules stack
+    if (sv.bullets) {
+      const wrapped = kept.some(g => g.length > 1) ? " wrapped" : "";
+      return `<ul class="body lined bullets${wrapped}">` +
+        kept.map(g => `<li>${g.map(esc).join("<br>")}</li>`).join("") + `</ul>`;
+    }
+    return `<p class="body lined">` +
+      kept.map((g, i) => g.map((line, j) =>
+        `<span${i && !j ? ' class="air"' : ""}>${esc(line)}</span>`).join("")).join("") +
+      `</p>`;
+  };
+
   // Every layout renders legibly with no asset, so the deck is walkable before
   // any capture exists.
   const LAYOUT = {
-    "title": sv => head(sv) + (sv.body ? `<p class="body">${esc(sv.body)}</p>` : ""),
+    "title": sv => head(sv) + body(sv),
 
-    "text-only": sv => head(sv) + (sv.body ? `<p class="body">${esc(sv.body)}</p>` : ""),
+    "text-only": sv => head(sv) + body(sv),
 
     "single-asset": sv => `<div class="row">
-        <div class="col">${head(sv)}${sv.body ? `<p class="body">${esc(sv.body)}</p>` : ""}</div>
+        <div class="col">${head(sv)}${body(sv)}</div>
         <div class="art">${frame(sv.asset)}</div>
       </div>`,
 
@@ -305,7 +344,7 @@
     // left, docked assets on the right. A pair that put its heading on top sat the
     // words in a different place from every deck around it, which reads as a stumble
     "asset-pair": sv => `<div class="row">
-        <div class="col">${head(sv)}${sv.body ? `<p class="body">${esc(sv.body)}</p>` : ""}</div>
+        <div class="col">${head(sv)}${body(sv)}</div>
         <div class="art">
           <div class="pair">` + (sv.assets || [sv.asset]).map(a =>
             `<div>${frame(a)}</div>`).join("") + `</div>
@@ -325,7 +364,7 @@
     // one dot per frame, this frame's lit. Each frame draws its own, so the stack
     // needs no shared state and no engine bookkeeping.
     "image-stack": sv => `<div class="row">
-        <div class="col">${head(sv)}${sv.body ? `<p class="body">${esc(sv.body)}</p>` : ""}</div>
+        <div class="col">${head(sv)}${body(sv)}</div>
         <div class="art stack-art">
           <div class="dots">${Array.from({ length: sv.stackCount || 1 }, (_, k) =>
             `<i class="${k === sv.stackIndex ? "on" : ""}"></i>`).join("")}</div>
@@ -336,7 +375,7 @@
     // same two-column rhythm as single-asset: the animation docks where a
     // screenshot would, so the deck does not change shape when one replaces the other
     "animation": sv => `<div class="row">
-        <div class="col">${head(sv)}${sv.body ? `<p class="body">${esc(sv.body)}</p>` : ""}</div>
+        <div class="col">${head(sv)}${body(sv)}</div>
         <div class="art">
           <div class="anim">${(ANIMATIONS[sv.animation] || { html: "" }).html}</div>
         </div>

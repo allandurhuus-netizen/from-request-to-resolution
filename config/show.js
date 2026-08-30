@@ -21,9 +21,10 @@ window.DECK_CONFIG = {
           "id": "main",
           "layout": "title",
           "eyebrow": "Contract/CR-Request approval",
-          "heading": "From Request to Resolution",
-          "body": "From system data to signature-ready. Data becomes documentation. Decisions stay human.",
+          "heading": "From Request\nto Resolution",
+          "body": "From system data to signature-ready.\n\nData becomes documentation.\n\nDecisions stay human.",
           "tall": false,
+          "bullets": true,
           "asset": null
         }
       ]
@@ -44,6 +45,7 @@ window.DECK_CONFIG = {
           "heading": "What we'll walk through",
           "body": "",
           "tall": false,
+          "bullets": false,
           "items": [
             "The Monitor - See every Workflow run in one place",
             "Today's Process - How contracts and CR-Requests are created today",
@@ -70,8 +72,9 @@ window.DECK_CONFIG = {
           "heading": "End-to-End Workflow Monitoring",
           "body": "Track each workflow from start to finish, monitor its health, and quickly identify where something needs attention.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 0,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-board.png",
@@ -86,8 +89,9 @@ window.DECK_CONFIG = {
           "heading": "Running",
           "body": "The Workflow is currently in progress and moving through the required process steps.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 1,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-running.png",
@@ -102,8 +106,9 @@ window.DECK_CONFIG = {
           "heading": "Pending approval",
           "body": "The workflow has reached an approval step and will continue once the required Human-made decision is received.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 2,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-pending-approval.png",
@@ -118,8 +123,9 @@ window.DECK_CONFIG = {
           "heading": "Awaiting signature",
           "body": "The document has been sent and is waiting for the required signature before continuing.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 3,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-awaiting-signature.png",
@@ -134,8 +140,9 @@ window.DECK_CONFIG = {
           "heading": "Succeeded",
           "body": "Contract signed, register updated. Green means the work was really delivered, not that the code ran.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 4,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-succeeded.png",
@@ -150,8 +157,9 @@ window.DECK_CONFIG = {
           "heading": "Failed",
           "body": "The workflow encountered an issue. The affected step and system-provided reason will be clearly identified.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 5,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-failed.png",
@@ -166,11 +174,29 @@ window.DECK_CONFIG = {
           "heading": "Failed, and dealt with",
           "body": "The issue has been acknowledged and addressed, while remaining visible for transparency and tracking.",
           "tall": false,
+          "bullets": false,
           "stackIndex": 6,
-          "stackCount": 7,
+          "stackCount": 8,
           "asset": {
             "type": "image",
             "src": "assets/show/automation-monitor-failed-completed.png",
+            "caption": null,
+            "autoplay": false
+          }
+        },
+        {
+          "id": "h",
+          "layout": "image-stack",
+          "eyebrow": "The automation monitor",
+          "heading": "The whole board again",
+          "body": "Every state you have just seen, in one place. This is where you watch whatever we build.",
+          "tall": false,
+          "bullets": false,
+          "stackIndex": 7,
+          "stackCount": 8,
+          "asset": {
+            "type": "image",
+            "src": "assets/show/automation-monitor-board.png",
             "caption": null,
             "autoplay": false
           }
@@ -190,9 +216,10 @@ window.DECK_CONFIG = {
           "id": "main",
           "layout": "title",
           "eyebrow": "Part one",
-          "heading": "Today, One Request Starts a Chain of Manual Work",
-          "body": "One customer request triggers multiple rounds of data entry, approvals, document creation, handoffs, and signatures. The same information is repeatedly entered, reviewed, sent, signed, and tracked across the process and the project or change can't begin until the entire chain is complete.",
+          "heading": "Today, One Request Starts\na Chain of Manual Work",
+          "body": "One customer request triggers multiple rounds of\ndata entry, approvals, document creation, handoffs, and signatures.\n\nThe same information is repeatedly\nentered, reviewed, sent, signed, and tracked across the process.\n\nThe project or change can't begin until the entire chain is complete.",
           "tall": false,
+          "bullets": true,
           "asset": null
         }
       ]
@@ -211,8 +238,9 @@ window.DECK_CONFIG = {
           "layout": "title",
           "eyebrow": "Part two",
           "heading": "The new process",
-          "body": "Enter Once. Automate the Rest.",
+          "body": "Enter Once.\nAutomate the Rest.",
           "tall": false,
+          "bullets": false,
           "asset": null
         }
       ]
@@ -233,6 +261,7 @@ window.DECK_CONFIG = {
           "heading": "Drop the system data into the SharePoint folder",
           "body": "That's it. No AI, no additional tooling, the workflow takes over from there.",
           "tall": false,
+          "bullets": false,
           "animation": "sharepoint-drop",
           "asset": null
         }
@@ -254,6 +283,7 @@ window.DECK_CONFIG = {
           "heading": "One Input. Automation Does the Rest.",
           "body": "Enter the required information in the system, export the PDF. Drop it in the SharePoint Folder.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/company-information-sheet.png",
@@ -282,6 +312,7 @@ window.DECK_CONFIG = {
           "heading": "No duplicate manual effort",
           "body": "The Automation extracts the data already entered, maps it to the right fields, and builds the customer document.",
           "tall": false,
+          "bullets": false,
           "animation": "extract-fill",
           "asset": null
         }
@@ -303,6 +334,7 @@ window.DECK_CONFIG = {
           "heading": "Everything is brought together in one place for review",
           "body": "The user is notified via Teams that the generated document and all extracted values are ready for review.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/teams-approval-card.png",
@@ -317,6 +349,7 @@ window.DECK_CONFIG = {
           "heading": "Adjust Before You Approve",
           "body": "Any extracted value can be updated directly during the review. The final approved values, whether unchanged or corrected, are then used to generate the customer document.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/teams-approval-editing.png",
@@ -331,6 +364,7 @@ window.DECK_CONFIG = {
           "heading": "Or, Take It to Email",
           "body": "The same review and approval can be completed via email when preferred. A secure, one-time link takes the user directly to the review page.",
           "tall": "full",
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/email-approval-page.png",
@@ -356,6 +390,7 @@ window.DECK_CONFIG = {
           "heading": "Direct Access.",
           "body": "No downloading attachments, no additional access rights for an account, app, or installation required. The full document is ready to review, with four clear steps guiding the user through the process.",
           "tall": true,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-page.png",
@@ -370,6 +405,7 @@ window.DECK_CONFIG = {
           "heading": "Signature, Built In.",
           "body": "Customers sign directly within the experience from anywhere, using a mouse, finger, or stylus, removing the need for additional e-signature tools and their associated licensing costs.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-draw.gif",
@@ -384,6 +420,7 @@ window.DECK_CONFIG = {
           "heading": "Sign Your Way",
           "body": "Prefer a handwritten signature? Simply upload a photo of it. The workflow extracts the signature and places it cleanly into the document.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-upload.gif",
@@ -398,6 +435,7 @@ window.DECK_CONFIG = {
           "heading": "Agreement, Confirmed",
           "body": "With the final confirmation, the agreement is complete. The Automation captures the reference, signer, and exact timestamp, creating a clear record of who agreed and when.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signing-approve.gif",
@@ -423,6 +461,7 @@ window.DECK_CONFIG = {
           "heading": "Everyone receives a final copy",
           "body": "The completed contract is sent directly to both the customer and the process initiator.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signed-contract.png",
@@ -437,6 +476,7 @@ window.DECK_CONFIG = {
           "heading": "Keep the right people informed",
           "body": "Additional contacts, such as Account Managers or the GISO team can be automatically copied on the final notification, ensuring everyone who needs to know is informed once the process is complete.",
           "tall": false,
+          "bullets": false,
           "asset": {
             "type": "image",
             "src": "assets/show/signed-contract.png",
@@ -462,6 +502,7 @@ window.DECK_CONFIG = {
           "heading": "IMAGINE",
           "body": "",
           "tall": false,
+          "bullets": false,
           "items": [
             "Connected to CRM",
             "Connected to SwoDP",
