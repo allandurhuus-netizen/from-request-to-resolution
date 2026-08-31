@@ -656,6 +656,27 @@
     lockTimer = setTimeout(() => { locked = false; }, (reduced ? 0 : ms) + LOCK_TAIL);
   }
 
+  /* ---------- held upright -----------------------------------------------
+     The deck is drawn 1920x1080 and the camera fits it to the viewport, so a phone
+     held upright shows it about a fifth of that size: a strip of type nobody can
+     read. Rather than serve that, a coarse-pointer portrait screen is asked to
+     turn. Landscape on a phone is a real reading size and is left alone.
+
+     Gated on a coarse pointer as well as the aspect, so a narrow window on a
+     desktop is not told to turn a phone it does not have. */
+  const coarse = matchMedia("(pointer: coarse)");
+  const upright = () => coarse.matches && innerHeight > innerWidth && fit() < 0.5;
+
+  const turn = document.createElement("div");
+  turn.id = "turn";
+  turn.innerHTML =
+    '<div class="turn-phone" aria-hidden="true"></div>' +
+    '<p class="turn-say">Turn your phone</p>' +
+    '<p class="turn-why">This deck is drawn landscape.</p>';
+  document.body.appendChild(turn);
+
+  const askToTurn = () => document.body.classList.toggle("upright", upright());
+
   // Right and Left always reset j to 0, and the move is direct: from (5,2) Right
   // animates straight to (6,0) as one diagonal move, never up then across.
   const next = () => go(Math.min(i + 1, S.length - 1), i + 1 <= S.length - 1 ? 0 : j);
@@ -689,7 +710,42 @@
     el.hint.classList.add("gone");
   }, { passive: true });
 
-  addEventListener("resize", () => apply(0));
+  /* ---------- touch ------------------------------------------------------
+     Touch mirrors the arrows on the same two axes: sideways for Sections, up and
+     down for Sub-views. Two fingers are left alone, so a screenshot can still be
+     pinched open, and a tap does nothing: on a phone the deck is read rather than
+     presented, and a stray tap should not lose someone's place. */
+  const SWIPE = 44;          // px of travel before a drag counts as a move
+  let touch = null;
 
+  addEventListener("touchstart", e => {
+    touch = e.touches.length === 1
+      ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+      : null;
+  }, { passive: true });
+
+  // a second finger during the drag makes it a pinch, and a pinch is not a move
+  addEventListener("touchmove", e => {
+    if (e.touches.length > 1) touch = null;
+  }, { passive: true });
+
+  addEventListener("touchend", e => {
+    const from = touch;
+    touch = null;
+    if (!from || upright()) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - from.x, dy = t.clientY - from.y;
+    if (Math.abs(dx) < SWIPE && Math.abs(dy) < SWIPE) return;
+    if (Math.abs(dx) > Math.abs(dy)) (dx < 0 ? next : prev)();
+    else (dy < 0 ? down : up)();
+    el.hint.classList.add("gone");
+  }, { passive: true });
+
+  // A finger has no arrow keys and no F, so the hint says what a finger can do.
+  if (coarse.matches) el.hint.textContent = "swipe to move";
+
+  addEventListener("resize", () => { askToTurn(); apply(0); });
+
+  askToTurn();
   apply(0);
 })();

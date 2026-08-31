@@ -27,6 +27,11 @@
 html, body {
   height: 100%;
   overflow: hidden;
+  /* touch: no rubber-band at the edges of a deck that does not scroll, and no
+     phone-sized re-flow of the type. Pinch is deliberately left alone, so a
+     screenshot on a small screen can still be opened up and read. */
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
   background: var(--ground);
   color: var(--ink);
   font-family: "Bahnschrift", "DIN Next", "Segoe UI", system-ui, sans-serif;
@@ -849,6 +854,54 @@ h2 {
 }
 #hint { bottom: 66px; right: 130px; opacity: .55; transition: opacity 600ms ease; }
 #hint.gone, #badge.gone { opacity: 0; }
+
+/* ---- held upright -------------------------------------------------------
+   Shown only when the engine finds a coarse pointer on a portrait screen. The
+   accent stays out of it: on this deck the accent means the track. */
+#turn { display: none; }
+body.upright #turn {
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  padding: 40px;
+  text-align: center;
+  background: var(--ground);
+}
+/* the deck is behind it and nobody should read a strip of unreadable type */
+body.upright #viewport { visibility: hidden; }
+
+.turn-phone {
+  width: 52px; height: 86px;
+  border: 2px solid var(--ink-quiet);
+  border-radius: 10px;
+  animation: turn-it 3s var(--easing) infinite;
+}
+@keyframes turn-it {
+  0%, 26%  { transform: rotate(0deg); }
+  52%, 88% { transform: rotate(-90deg); }
+  100%     { transform: rotate(0deg); }
+}
+.turn-say {
+  font-variation-settings: "wght" 600, "wdth" 100;
+  font-size: 30px;
+  color: var(--ink);
+}
+.turn-why {
+  font-variation-settings: "wght" 500, "wdth" 75;
+  font-size: 14px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--ink-quiet);
+  margin-top: -22px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn-phone { animation: none; transform: rotate(-90deg); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   #ground, #camera, #canvas, .section { transition-duration: 0ms !important; }
